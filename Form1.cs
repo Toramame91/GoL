@@ -12,8 +12,7 @@ namespace Game_of_Life
 {
     public partial class Form1 : Form
     {
-
-        Random rnd = new Random();
+        Random rnd = new Random();        
         // The universe array
         bool[,] universe = new bool[100, 100];
         //scratchpad array
@@ -21,13 +20,17 @@ namespace Game_of_Life
         // Drawing colors      
         Color gridColor = Color.Black;
         Color cellColor = Color.PaleVioletRed;
+        bool gridDisplay = true;
+        //text display initialization for neighbor counting
+        bool textDisplay = true;
+        Font font = new Font("Verdana", 6f);
+        StringFormat stringFormat = new StringFormat();
 
         // The Timer class
         Timer timer = new Timer();
 
         // Generation count
         int generations = 0;
-
         public Form1()
         {
             InitializeComponent();
@@ -36,12 +39,11 @@ namespace Game_of_Life
             timer.Tick += Timer_Tick;
             //generate first new random universe
             InitRandomUniverse();
-            //count living cells
+            //initial living cells count
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
             //initialize scratchpad array
             ScratchpadInitialize();
         }
-
 
         // The event called by the timer every Interval milliseconds.
         private void Timer_Tick(object sender, EventArgs e)
@@ -182,15 +184,26 @@ namespace Game_of_Life
                     cellRect.Y = y * cellHeight;
                     cellRect.Width = cellWidth;
                     cellRect.Height = cellHeight;
+                    //text alignment for cell neighbor count
+                    stringFormat.Alignment = StringAlignment.Center;
+                    stringFormat.LineAlignment = StringAlignment.Center;
+                    int neighbors = CountNeighbors(x, y);
 
                     // Fill the cell with a brush if alive
                     if (universe[x, y] == true)
                     {
-                        e.Graphics.FillRectangle(cellBrush, cellRect);
+                        e.Graphics.FillRectangle(cellBrush, cellRect);                        
                     }
-
-                    // Outline the cell with a pen
-                    e.Graphics.DrawRectangle(gridPen, cellRect.X, cellRect.Y, cellRect.Width, cellRect.Height);
+                    //display text for living neighbors   
+                    if (textDisplay == true)
+                    {
+                        e.Graphics.DrawString(neighbors.ToString(), font, Brushes.Black, cellRect, stringFormat);
+                    }
+                    if (gridDisplay == true)
+                    {
+                        // Outline the cell with a pen
+                        e.Graphics.DrawRectangle(gridPen, cellRect.X, cellRect.Y, cellRect.Width, cellRect.Height);
+                    }                    
                 }
             }
 
@@ -198,7 +211,6 @@ namespace Game_of_Life
             gridPen.Dispose();
             cellBrush.Dispose();
         }
-
         private void graphicsPanel1_MouseClick(object sender, MouseEventArgs e)
         {
             // If the left mouse button was clicked
@@ -359,31 +371,75 @@ namespace Game_of_Life
         {
             Application.Exit();
         }
-
+        //start generations
         private void toolstripPlayButton_Click(object sender, EventArgs e)
         {
             timer.Enabled = true; // start timer running 
         }
+        //pause generations
         private void toolstripPauseButton_Click(object sender, EventArgs e)
         {
             timer.Stop();//pause timer
         }
-
+        //moves to next generation
         private void toolstripNextButton_Click(object sender, EventArgs e)
         {
             NextGeneration();
         }
-
+        //clear universe to blank slate
         private void menuFileClear_Click(object sender, EventArgs e)
         {
             clearUniverse();
         }
-
+        //clear universe to blank slate
         private void toolstripClearButton_Click(object sender, EventArgs e)
         {
             clearUniverse();
         }
-               
+        //menu button for toggling grid lines on or off
+        private void customizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (gridDisplay == true)
+            {
+                gridDisplay = false;
+            }
+            else
+            {
+                gridDisplay = true;
+            }
+        }
+        //menu button to toggle neighbor count in cells
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (textDisplay == true)
+            {
+                textDisplay = false;
+            }
+            else
+            {
+                textDisplay = true;
+            }
+        }
+
+        private void editTimingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void editWindowSizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UniverseSettingsDialog settings = new UniverseSettingsDialog();
+
+            settings.UniverseLength = universe.GetLength(0);
+            settings.UniverseHeight = universe.GetLength(1);
+            settings.TimeInterval = timer.Interval;
+
+            if (settings.ShowDialog() == DialogResult.OK)
+            {
+                universe = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
+                timer.Interval = (int)settings.TimeInterval;
+            }
+        }
     }
 
     struct Cell
