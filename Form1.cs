@@ -39,9 +39,7 @@ namespace Game_of_Life
             InitializeComponent();
             // Setup the timer
             timer.Interval = 100; // milliseconds
-            timer.Tick += Timer_Tick;
-            ////generate first new random universe
-            //InitRandomUniverse();
+            timer.Tick += Timer_Tick;            
             //initial living cells count
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
             //initialize scratchpad array
@@ -244,6 +242,8 @@ namespace Game_of_Life
         {
             clearUniverse();
             InitRandomUniverse();
+            // Update status strips
+            toolStripStatusLabelGenerations.Text = "Generations = " + generations.ToString();
             //count living cells
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
         }        
@@ -261,6 +261,8 @@ namespace Game_of_Life
                 }
             }
             generations = 0;
+            // Update status strips
+            toolStripStatusLabelGenerations.Text = "Generations = " + generations.ToString();
             //count living cells
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
             // Tell Windows you need to repaint
