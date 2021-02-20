@@ -12,11 +12,14 @@ namespace Game_of_Life
 {
     public partial class Form1 : Form
     {
-        Random rnd = new Random();        
+        //initializers for random seed
+        Random rnd = new Random();
+        int currentSeed = 0;
+        
         // The universe array
-        bool[,] universe = new bool[100, 100];
+        bool[,] universe = new bool[50, 50];
         //scratchpad array
-        bool[,] scratchpad = new bool[100, 100];
+        bool[,] scratchpad = new bool[50, 50];
         // Drawing colors      
         Color gridColor = Color.Black;
         Color cellColor = Color.PaleVioletRed;
@@ -37,8 +40,8 @@ namespace Game_of_Life
             // Setup the timer
             timer.Interval = 100; // milliseconds
             timer.Tick += Timer_Tick;
-            //generate first new random universe
-            InitRandomUniverse();
+            ////generate first new random universe
+            //InitRandomUniverse();
             //initial living cells count
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
             //initialize scratchpad array
@@ -53,6 +56,7 @@ namespace Game_of_Life
         //init scratchpad function
         private void ScratchpadInitialize()
         {
+
             // Iterate through the universe in the y, top to bottom
             for (int y = 0; y < universe.GetLength(1); y++)
             {
@@ -119,17 +123,18 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-        //create a randon universe
+        //create a random universe
         private void InitRandomUniverse()
         {
-            graphicsPanel1.Invalidate();
+            Random newRand = new Random(currentSeed);
+            graphicsPanel1.Invalidate();            
             for (int y = 0; y < universe.GetLength(1); y++)
             {
                 // Iterate through the universe in the x, left to right
                 for (int x = 0; x < universe.GetLength(0); x++)
                 {                    
-                    int number = rnd.Next(3);
-                    if (number == 0)
+                    int randNum = newRand.Next(3);
+                    if (randNum == 0)
                     {
                         universe[x, y] = true;
                     }
@@ -168,7 +173,7 @@ namespace Game_of_Life
 
             // A Pen for drawing the grid lines (color, width)
             Pen gridPen = new Pen(gridColor, 1);
-
+            Pen gridPen2 = new Pen(gridColor, 2);
             // A Brush for filling living cells interiors (color)
             Brush cellBrush = new SolidBrush(cellColor);
 
@@ -203,6 +208,7 @@ namespace Game_of_Life
                     {
                         // Outline the cell with a pen
                         e.Graphics.DrawRectangle(gridPen, cellRect.X, cellRect.Y, cellRect.Width, cellRect.Height);
+                        e.Graphics.DrawRectangle(gridPen2, cellRect.X * 10, cellRect.Y * 10, cellRect.Width * 10, cellRect.Height * 10);
                     }                    
                 }
             }
@@ -407,6 +413,7 @@ namespace Game_of_Life
             {
                 gridDisplay = true;
             }
+            graphicsPanel1.Invalidate();
         }
         //menu button to toggle neighbor count in cells
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -419,11 +426,7 @@ namespace Game_of_Life
             {
                 textDisplay = true;
             }
-        }
-
-        private void editTimingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            
+            graphicsPanel1.Invalidate();
         }
 
         private void editWindowSizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -439,6 +442,28 @@ namespace Game_of_Life
                 universe = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
                 timer.Interval = (int)settings.TimeInterval;
             }
+            graphicsPanel1.Invalidate();
+        }
+
+        private void setSeedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RandomizerDialog seedSetting = new RandomizerDialog();
+
+            seedSetting.Seed = currentSeed;
+
+            if (seedSetting.ShowDialog() == DialogResult.OK)
+            {
+                currentSeed = (int)seedSetting.Seed;
+            }
+            graphicsPanel1.Invalidate();
+        }
+
+        private void randomizeUniverseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentSeed = rnd.Next(DateTime.Now.Day);
+            clearUniverse();
+            InitRandomUniverse();
+            graphicsPanel1.Invalidate();
         }
     }
 
