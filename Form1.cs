@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace Game_of_Life
         bool[,] scratchpad = new bool[50, 50];
         // Drawing colors      
         Color gridColor = Color.Black;
+        Color gridColor2 = Color.Black;
         Color cellColor = Color.PaleVioletRed;
         bool gridDisplay = true;
         //text display initialization for neighbor counting
@@ -171,7 +173,7 @@ namespace Game_of_Life
 
             // A Pen for drawing the grid lines (color, width)
             Pen gridPen = new Pen(gridColor, 1);
-            Pen gridPen2 = new Pen(gridColor, 2);
+            Pen gridPen2 = new Pen(gridColor2, 2);
             // A Brush for filling living cells interiors (color)
             Brush cellBrush = new SolidBrush(cellColor);
 
@@ -365,6 +367,114 @@ namespace Game_of_Life
             }
             return count;
         }
+        private void SaveUniverse()
+        {
+            SaveFileDialog saveFile = new SaveFileDialog();
+            saveFile.Filter = "All Files|*.*|Cells|*.cells";
+            saveFile.FilterIndex = 2; saveFile.DefaultExt = "cells";
+
+            if (DialogResult.OK == saveFile.ShowDialog())
+            {
+                StreamWriter writer = new StreamWriter(saveFile.FileName);
+
+                // Write any comments you want to include first.
+                // Prefix all comment strings with an exclamation point.
+                // Use WriteLine to write the strings to the file. 
+                // It appends a CRLF for you.
+                writer.WriteLine("!This is my comment.");
+
+                // Iterate through the universe one row at a time.
+                for (int y = 0; y < universe.GetLength(1); y++)
+                {                    
+                    String currentRow = string.Empty;
+
+                    // Iterate through the current row one cell at a time.
+                    for (int x = 0; x <universe.GetLength(0); x++)
+                    {
+                        if (universe[x,y] == true)
+                        {
+                            currentRow += "O";
+                        }
+                        else
+                        {
+                            currentRow += ".";
+                        }
+                    }
+                    // Once the current row has been read through and the 
+                    // string constructed then write it to the file using WriteLine.
+                    writer.WriteLine(currentRow);
+                }
+                // After all rows and columns have been written then close the file.
+                writer.Close();
+            }
+        }
+
+        private void OpenUniverse()
+        {
+            OpenFileDialog openFile = new OpenFileDialog();
+            openFile.Filter = "All Files|*.*|Cells|*.cells";
+            openFile.FilterIndex = 2;
+
+            if (DialogResult.OK == openFile.ShowDialog())
+            {
+                StreamReader reader = new StreamReader(openFile.FileName);                
+                int maxWidth = 0;
+                int maxHeight = 0;
+
+                // Iterate through the file once to get its size.
+                while (!reader.EndOfStream)
+                {
+                    // Read one row at a time.
+                    // If the row begins with '!' then it is a comment
+                    // and should be ignored.
+                    string row = reader.ReadLine();
+                    if (row.StartsWith("!"))
+                    {
+                        continue;
+                    }                    
+                    else
+                    {
+                        maxHeight += 1;
+                        maxWidth = row.Length;
+                        continue;
+                    }
+
+                }
+                universe = new bool[maxWidth, maxHeight];
+                scratchpad = new bool[maxWidth, maxHeight];
+                // Reset the file pointer back to the beginning of the file.
+                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                int yPos = 0;
+                // Iterate through the file again, this time reading in the cells.
+                while (!reader.EndOfStream)
+                {                    
+                    // Read one row at a time.
+                    string row = reader.ReadLine();
+                    if (row.StartsWith("!"))
+                    {
+                        continue;
+                    }
+                    else
+                    {                         
+                        for (int xPos = 0; xPos < row.Length; xPos++)
+                        {
+                            if (row[xPos] == 'O')
+                            {
+                                universe[xPos, yPos] = true;
+                            }
+                            if (row[xPos] == '.')
+                            {
+                                universe[xPos, yPos] = false;
+                            }                            
+                        }
+                        yPos += 1;
+                        continue;
+                    }   
+                }
+                // Close the file.
+                reader.Close();
+            }
+        }
 
         //toolstrip and menu functions
         private void menuFileNew_Click(object sender, EventArgs e)
@@ -442,6 +552,7 @@ namespace Game_of_Life
             if (settings.ShowDialog() == DialogResult.OK)
             {
                 universe = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
+                scratchpad = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
                 timer.Interval = (int)settings.TimeInterval;
             }
             graphicsPanel1.Invalidate();
@@ -467,20 +578,68 @@ namespace Game_of_Life
             InitRandomUniverse();
             graphicsPanel1.Invalidate();
         }
-    }
 
-    struct Cell
-    {
-        public bool cellLiving;
-        public int lifeCounter;
-        public Cell(bool cell)
+        private void saveToolStripButton_Click(object sender, EventArgs e)
         {
-            this.lifeCounter = 0;
-            this.cellLiving = cell;
-            if (this.cellLiving == true)
+            SaveUniverse();            
+        }
+
+        private void openToolStripButton_Click(object sender, EventArgs e)
+        {
+            OpenUniverse();
+            // Update status strips
+            toolStripStatusLabelGenerations.Text = "Generations = " + generations.ToString();
+            //count living cells
+            toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
+            graphicsPanel1.Invalidate();
+        }
+
+        private void editBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ColorDialog backgroundColor = new ColorDialog();
+            backgroundColor.Color = graphicsPanel1.BackColor;
+
+            if (backgroundColor.ShowDialog() == DialogResult.OK)
             {
-                this.lifeCounter += 1;
+                graphicsPanel1.BackColor = backgroundColor.Color;
             }
         }
+
+        private void editGridLineColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ColorDialog gridColorDialog = new ColorDialog();
+            gridColorDialog.Color = gridColor;
+
+            if (gridColorDialog.ShowDialog() == DialogResult.OK)
+            {
+                gridColor = gridColorDialog.Color;
+            }
+            graphicsPanel1.Invalidate();
+        }
+
+        private void edit1010GridLineColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ColorDialog gridColorDialog = new ColorDialog();
+            gridColorDialog.Color = gridColor2;
+
+            if (gridColorDialog.ShowDialog() == DialogResult.OK)
+            {
+                gridColor2 = gridColorDialog.Color;
+            }
+            graphicsPanel1.Invalidate();
+        }
+
+        private void editLivingCellColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ColorDialog cellColorDialog = new ColorDialog();
+            cellColorDialog.Color = cellColor;
+
+            if (cellColorDialog.ShowDialog() == DialogResult.OK)
+            {
+                cellColor = cellColorDialog.Color;
+            }
+            graphicsPanel1.Invalidate();
+        }
     }
+    
 }
