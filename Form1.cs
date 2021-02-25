@@ -15,8 +15,7 @@ namespace Game_of_Life
     {
         //initializers for random seed
         Random rnd = new Random();
-        int currentSeed = 0;
-        
+        int currentSeed = 0;        
         // The universe array
         bool[,] universe = new bool[50, 50];
         //scratchpad array
@@ -25,17 +24,20 @@ namespace Game_of_Life
         Color gridColor = Color.Black;
         Color gridColor2 = Color.Black;
         Color cellColor = Color.PaleVioletRed;
-        bool gridDisplay = true;
-        //text display initialization for neighbor counting
+        //booleans for toggling
+        bool gridDisplay = true;        
         bool textDisplay = true;
+        bool finiteMode = false;
+        bool HUDdisplay = true;
+        //text display initialization for neighbor counting
         Font font = new Font("Verdana", 6f);
+        Font fontHUD = new Font("Arial", 14f, FontStyle.Bold);
         StringFormat stringFormat = new StringFormat();
-
         // The Timer class
         Timer timer = new Timer();
-
         // Generation count
         int generations = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -123,6 +125,48 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
+
+        private void NextGenRulesTorodial()
+        {
+            // Iterate through the universe in the y, top to bottom
+            for (int y = 0; y < universe.GetLength(1); y++)
+            {
+                // Iterate through the universe in the x, left to right
+                for (int x = 0; x < universe.GetLength(0); x++)
+                {
+                    if (universe[x, y] == true)
+                    {
+                        //rule 1
+                        if (CountNeighborsTorodial(x, y) < 2)
+                        {
+
+                            scratchpad[x, y] = false;
+                        }
+                        //rule 2
+                        if (CountNeighborsTorodial(x, y) > 3)
+                        {
+
+                            scratchpad[x, y] = false;
+                        }
+                        //rule 3
+                        if (CountNeighborsTorodial(x, y) <= 3 && CountNeighborsTorodial(x, y) >= 2)
+                        {
+                            scratchpad[x, y] = true;
+                        }
+                    }
+                    else
+                    {
+                        //rule 4
+                        if (CountNeighborsTorodial(x, y) == 3)
+                        {
+                            scratchpad[x, y] = true;
+                        }
+                    }
+
+                }
+            }
+            graphicsPanel1.Invalidate();
+        }
         //create a random universe
         private void InitRandomUniverse()
         {
@@ -150,9 +194,8 @@ namespace Game_of_Life
         // Calculate the next generation of cells
         private void NextGeneration()
         {
-            
             //implement rules of conway's game of life for next generation on scratchpad
-            NextGenRules();
+            NextGenType();  
             // swap scratchpad to universe
             replaceUniverse();
             // Increment generation count
@@ -162,6 +205,18 @@ namespace Game_of_Life
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
         }
 
+        private void NextGenType()
+        {
+            //toggle between finite and torodial
+            if (finiteMode == true)
+            {
+                NextGenRules();
+            }
+            else
+            {
+                NextGenRulesTorodial();
+            }
+        }
 
         private void graphicsPanel1_Paint(object sender, PaintEventArgs e)
         {
@@ -176,7 +231,7 @@ namespace Game_of_Life
             Pen gridPen2 = new Pen(gridColor2, 2);
             // A Brush for filling living cells interiors (color)
             Brush cellBrush = new SolidBrush(cellColor);
-
+                                  
             // Iterate through the universe in the y, top to bottom
             for (int y = 0; y < universe.GetLength(1); y++)
             {
@@ -192,30 +247,63 @@ namespace Game_of_Life
                     //text alignment for cell neighbor count
                     stringFormat.Alignment = StringAlignment.Center;
                     stringFormat.LineAlignment = StringAlignment.Center;
-                    int neighbors = CountNeighbors(x, y);
-
+                                        
                     // Fill the cell with a brush if alive
                     if (universe[x, y] == true)
                     {
-                        e.Graphics.FillRectangle(cellBrush, cellRect);                        
-                    }
-                    //display text for living neighbors   
-                    if (textDisplay == true)
-                    {
-                        e.Graphics.DrawString(neighbors.ToString(), font, Brushes.Black, cellRect, stringFormat);
+                        e.Graphics.FillRectangle(cellBrush, cellRect);
                     }
                     if (gridDisplay == true)
                     {
                         // Outline the cell with a pen
                         e.Graphics.DrawRectangle(gridPen, cellRect.X, cellRect.Y, cellRect.Width, cellRect.Height);
                         e.Graphics.DrawRectangle(gridPen2, cellRect.X * 10, cellRect.Y * 10, cellRect.Width * 10, cellRect.Height * 10);
-                    }                    
+                    }
+                    //display text for living neighbors   
+                    if (textDisplay == true)
+                    {
+                        e.Graphics.DrawString(displayNeighbors(x,y).ToString(), font, Brushes.Black, cellRect, stringFormat);
+                    }
                 }
+            }
+            //display HUD
+            if (HUDdisplay == true)
+            {
+                e.Graphics.DrawString(DisplayHUD(), fontHUD, Brushes.Red, 0, 0);
             }
 
             // Cleaning up pens and brushes
             gridPen.Dispose();
             cellBrush.Dispose();
+        }
+
+        private string DisplayHUD()
+        {
+            string type;
+            if (finiteMode == true)
+            {
+                type = "Finite";
+            }
+            else
+            {
+                type = "Torodial";
+            }
+            string HUD = "Generations = " + generations + "\nCell Count = " + CountLivingCells() + "\nBoundary Type = " + type +  "\nUniverse Size = (" + universe.GetLength(0) + "," +
+                universe.GetLength(1) + ")";
+            return HUD;
+        }
+        private int displayNeighbors(int x, int y)
+        {
+            int neighbors;
+            if (finiteMode == true)
+            {
+                neighbors = CountNeighbors(x, y);
+            }
+            else
+            {
+                neighbors = CountNeighborsTorodial(x, y);
+            }
+            return neighbors;
         }
         private void graphicsPanel1_MouseClick(object sender, MouseEventArgs e)
         {
@@ -248,7 +336,7 @@ namespace Game_of_Life
             toolStripStatusLabelGenerations.Text = "Generations = " + generations.ToString();
             //count living cells
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
-        }        
+        }
         //function to clear the universe and scratchpad board 
         private void clearUniverse()
         {            
@@ -271,7 +359,7 @@ namespace Game_of_Life
             graphicsPanel1.Invalidate();
         }
         
-        //logic for counting tiles around a cell
+        //logic for counting tiles around a cell (for a finite universe)
         private int CountNeighbors(int _x, int _y)
         {
             bool checkRight = _x < universe.GetLength(0) - 1;
@@ -281,7 +369,7 @@ namespace Game_of_Life
             int livingNeighborCount = 0;
             //making sure right value doesn't throw.
             if (checkRight)
-            {
+            {                
                 //checking to the right
                 if (universe[_x + 1, _y] == true)
                 {
@@ -323,7 +411,6 @@ namespace Game_of_Life
                 //checking bottom left
                 if (checkBottom)
                 {
-
                     if (universe[_x - 1, _y + 1] == true)
                     {
                         livingNeighborCount += 1;
@@ -348,6 +435,48 @@ namespace Game_of_Life
             }
             return livingNeighborCount;
         }
+        //function for a torodial universe
+        private int CountNeighborsTorodial(int _x, int _y)
+        {
+            int count = 0;            
+            int xLen = universe.GetLength(0); 
+            int yLen = universe.GetLength(1);
+            for (int yOffset = -1; yOffset <= 1; yOffset++)
+            {
+                for (int xOffset = -1; xOffset <= 1; xOffset++)
+                {
+                    int xCheck = _x + xOffset;
+                    int yCheck = _y + yOffset;
+                    // if xOffset and yOffset are both equal to 0 then continue
+                    if (xOffset == 0 && yOffset == 0)
+                    {
+                        continue;
+                    }
+                    // if xCheck is less than 0 then set to xLen - 1
+                    // if yCheck is less than 0 then set to yLen - 1
+                    if (xCheck < 0)
+                    {
+                        xCheck = xLen -1;
+                    }
+                    if (yCheck < 0)
+                    {
+                        yCheck = yLen -1;
+                    }
+                    // if xCheck is greater than or equal too xLen then set to 0
+                    if (xCheck >= xLen)
+                    {
+                        xCheck = 0;
+                    }
+                    // if yCheck is greater than or equal too yLen then set to 0
+                    if (yCheck >= yLen)
+                    {
+                        yCheck = 0;
+                    }
+                    if (universe[xCheck, yCheck] == true) count++;
+                }
+            }
+            return count;
+        }
 
         //logic for counting living cells
         private int CountLivingCells()
@@ -367,6 +496,7 @@ namespace Game_of_Life
             }
             return count;
         }
+        //function to save the current universe to txt
         private void SaveUniverse()
         {
             SaveFileDialog saveFile = new SaveFileDialog();
@@ -408,7 +538,7 @@ namespace Game_of_Life
                 writer.Close();
             }
         }
-
+        //function to open a saved universe file
         private void OpenUniverse()
         {
             OpenFileDialog openFile = new OpenFileDialog();
@@ -477,6 +607,7 @@ namespace Game_of_Life
         }
 
         //toolstrip and menu functions
+        //clears and redraws universe based on current seed
         private void menuFileNew_Click(object sender, EventArgs e)
         {
             resetUniverse();
@@ -485,6 +616,7 @@ namespace Game_of_Life
         {
             resetUniverse();
         }
+        //exit application button
         private void menuFileExit_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -540,7 +672,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //dialog to edit the size and time interval for universe
         private void editWindowSizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UniverseSettingsDialog settings = new UniverseSettingsDialog();
@@ -557,7 +689,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //dialog to set the seed for universe
         private void setSeedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RandomizerDialog seedSetting = new RandomizerDialog();
@@ -570,7 +702,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //creates new universe from random time seed
         private void randomizeUniverseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             currentSeed = rnd.Next(DateTime.Now.Day);
@@ -578,12 +710,12 @@ namespace Game_of_Life
             InitRandomUniverse();
             graphicsPanel1.Invalidate();
         }
-
+        //dialog to save current universe
         private void saveToolStripButton_Click(object sender, EventArgs e)
         {
             SaveUniverse();            
         }
-
+        //dialog to open a file to read and load universe
         private void openToolStripButton_Click(object sender, EventArgs e)
         {
             OpenUniverse();
@@ -593,7 +725,7 @@ namespace Game_of_Life
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
             graphicsPanel1.Invalidate();
         }
-
+        //color dialog for changing gridline color
         private void editBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ColorDialog backgroundColor = new ColorDialog();
@@ -604,7 +736,7 @@ namespace Game_of_Life
                 graphicsPanel1.BackColor = backgroundColor.Color;
             }
         }
-
+        //color dialog for changing gridline color
         private void editGridLineColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ColorDialog gridColorDialog = new ColorDialog();
@@ -616,7 +748,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //color dialog for changing 10*10 gidline color
         private void edit1010GridLineColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ColorDialog gridColorDialog = new ColorDialog();
@@ -628,7 +760,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //color dialog for changing living cell color
         private void editLivingCellColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ColorDialog cellColorDialog = new ColorDialog();
@@ -637,6 +769,32 @@ namespace Game_of_Life
             if (cellColorDialog.ShowDialog() == DialogResult.OK)
             {
                 cellColor = cellColorDialog.Color;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //toggle universe type between torodial and finite
+        private void changeUniverseTypeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (finiteMode == true)
+            {
+                finiteMode = false;
+            }
+            else
+            {
+                finiteMode = true;
+            }
+            graphicsPanel1.Invalidate();
+        }
+
+        private void toggleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (HUDdisplay == true)
+            {
+                HUDdisplay = false;
+            }
+            else
+            {
+                HUDdisplay = true;
             }
             graphicsPanel1.Invalidate();
         }

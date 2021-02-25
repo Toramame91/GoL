@@ -67,6 +67,7 @@ namespace Game_of_Life
             this.toolStripStatusLabelGenerations = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLivingCells = new System.Windows.Forms.ToolStripStatusLabel();
+            this.changeUniverseTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.graphicsPanel1 = new Game_of_Life.GraphicsPanel();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -192,16 +193,21 @@ namespace Game_of_Life
             // 
             // toggleToolStripMenuItem
             // 
+            this.toggleToolStripMenuItem.Checked = true;
+            this.toggleToolStripMenuItem.CheckOnClick = true;
+            this.toggleToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.toggleToolStripMenuItem.Name = "toggleToolStripMenuItem";
             this.toggleToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.toggleToolStripMenuItem.Text = "Toggle &Heads up";
+            this.toggleToolStripMenuItem.Click += new System.EventHandler(this.toggleToolStripMenuItem_Click);
             // 
             // functionsToolStripMenuItem
             // 
             this.functionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editRandomSeedToolStripMenuItem,
             this.editWindowSizeToolStripMenuItem,
-            this.personalizationToolStripMenuItem});
+            this.personalizationToolStripMenuItem,
+            this.changeUniverseTypeToolStripMenuItem});
             this.functionsToolStripMenuItem.Name = "functionsToolStripMenuItem";
             this.functionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.functionsToolStripMenuItem.Text = "Settings";
@@ -212,7 +218,7 @@ namespace Game_of_Life
             this.setSeedToolStripMenuItem,
             this.randomizeUniverseToolStripMenuItem});
             this.editRandomSeedToolStripMenuItem.Name = "editRandomSeedToolStripMenuItem";
-            this.editRandomSeedToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.editRandomSeedToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
             this.editRandomSeedToolStripMenuItem.Text = "Randomize";
             // 
             // setSeedToolStripMenuItem
@@ -232,7 +238,7 @@ namespace Game_of_Life
             // editWindowSizeToolStripMenuItem
             // 
             this.editWindowSizeToolStripMenuItem.Name = "editWindowSizeToolStripMenuItem";
-            this.editWindowSizeToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.editWindowSizeToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
             this.editWindowSizeToolStripMenuItem.Text = "Edit Universe Size";
             this.editWindowSizeToolStripMenuItem.Click += new System.EventHandler(this.editWindowSizeToolStripMenuItem_Click);
             // 
@@ -244,7 +250,7 @@ namespace Game_of_Life
             this.edit1010GridLineColorToolStripMenuItem,
             this.editLivingCellColorToolStripMenuItem});
             this.personalizationToolStripMenuItem.Name = "personalizationToolStripMenuItem";
-            this.personalizationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.personalizationToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
             this.personalizationToolStripMenuItem.Text = "Personalization";
             // 
             // editBackgroundColorToolStripMenuItem
@@ -398,6 +404,14 @@ namespace Game_of_Life
             this.toolStripStatusLivingCells.Size = new System.Drawing.Size(87, 17);
             this.toolStripStatusLivingCells.Text = "Living Cells = 0";
             // 
+            // changeUniverseTypeToolStripMenuItem
+            // 
+            this.changeUniverseTypeToolStripMenuItem.Name = "changeUniverseTypeToolStripMenuItem";
+            this.changeUniverseTypeToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.changeUniverseTypeToolStripMenuItem.Text = "Change Universe Type";
+            this.changeUniverseTypeToolStripMenuItem.ToolTipText = "Toggle between finite and torodial universe types";
+            this.changeUniverseTypeToolStripMenuItem.Click += new System.EventHandler(this.changeUniverseTypeToolStripMenuItem_Click);
+            // 
             // graphicsPanel1
             // 
             this.graphicsPanel1.BackColor = System.Drawing.SystemColors.Window;
@@ -474,6 +488,7 @@ namespace Game_of_Life
         private System.Windows.Forms.ToolStripMenuItem editGridLineColorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem edit1010GridLineColorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editLivingCellColorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem changeUniverseTypeToolStripMenuItem;
     }
 }
 
