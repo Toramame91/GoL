@@ -13,9 +13,10 @@ namespace Game_of_Life
 {
     public partial class Form1 : Form
     {
+        #region initializers
         //initializers for random seed
         Random rnd = new Random();
-        int currentSeed = 0;        
+        int currentSeed = 0;
         // The universe array
         bool[,] universe = new bool[50, 50];
         //scratchpad array
@@ -25,7 +26,7 @@ namespace Game_of_Life
         Color gridColor2 = Color.Black;
         Color cellColor = Color.PaleVioletRed;
         //booleans for toggling
-        bool gridDisplay = true;        
+        bool gridDisplay = true;
         bool textDisplay = true;
         bool finiteMode = false;
         bool HUDdisplay = true;
@@ -37,6 +38,8 @@ namespace Game_of_Life
         Timer timer = new Timer();
         // Generation count
         int generations = 0;
+        #endregion
+
 
         public Form1()
         {
@@ -49,7 +52,7 @@ namespace Game_of_Life
             //initialize scratchpad array
             ScratchpadInitialize();
         }
-
+        #region functions
         // The event called by the timer every Interval milliseconds.
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -91,7 +94,7 @@ namespace Game_of_Life
             {
                 // Iterate through the universe in the x, left to right
                 for (int x = 0; x < universe.GetLength(0); x++)
-                {                    
+                {
                     if (universe[x, y] == true)
                     {
                         //rule 1
@@ -125,7 +128,7 @@ namespace Game_of_Life
             }
             graphicsPanel1.Invalidate();
         }
-
+        //torodial universe function rules
         private void NextGenRulesTorodial()
         {
             // Iterate through the universe in the y, top to bottom
@@ -171,12 +174,12 @@ namespace Game_of_Life
         private void InitRandomUniverse()
         {
             Random newRand = new Random(currentSeed);
-            graphicsPanel1.Invalidate();            
+            graphicsPanel1.Invalidate();
             for (int y = 0; y < universe.GetLength(1); y++)
             {
                 // Iterate through the universe in the x, left to right
                 for (int x = 0; x < universe.GetLength(0); x++)
-                {                    
+                {
                     int randNum = newRand.Next(3);
                     if (randNum == 0)
                     {
@@ -187,27 +190,25 @@ namespace Game_of_Life
                         universe[x, y] = false;
                     }
                 }
-            }            
+            }
         }
-
-
         // Calculate the next generation of cells
         private void NextGeneration()
         {
             //implement rules of conway's game of life for next generation on scratchpad
-            NextGenType();  
+            NextGenType();
             // swap scratchpad to universe
             replaceUniverse();
             // Increment generation count
-            generations++;            
+            generations++;
             // Update status strips
             toolStripStatusLabelGenerations.Text = "Generations = " + generations.ToString();
             toolStripStatusLivingCells.Text = "Living Cells = " + CountLivingCells();
         }
 
+        //toggle between finite and torodial
         private void NextGenType()
-        {
-            //toggle between finite and torodial
+        {            
             if (finiteMode == true)
             {
                 NextGenRules();
@@ -231,7 +232,6 @@ namespace Game_of_Life
             Pen gridPen2 = new Pen(gridColor2, 2);
             // A Brush for filling living cells interiors (color)
             Brush cellBrush = new SolidBrush(cellColor);
-                                  
             // Iterate through the universe in the y, top to bottom
             for (int y = 0; y < universe.GetLength(1); y++)
             {
@@ -247,7 +247,7 @@ namespace Game_of_Life
                     //text alignment for cell neighbor count
                     stringFormat.Alignment = StringAlignment.Center;
                     stringFormat.LineAlignment = StringAlignment.Center;
-                                        
+
                     // Fill the cell with a brush if alive
                     if (universe[x, y] == true)
                     {
@@ -262,7 +262,7 @@ namespace Game_of_Life
                     //display text for living neighbors   
                     if (textDisplay == true)
                     {
-                        e.Graphics.DrawString(displayNeighbors(x,y).ToString(), font, Brushes.Black, cellRect, stringFormat);
+                        e.Graphics.DrawString(displayNeighbors(x, y).ToString(), font, Brushes.Black, cellRect, stringFormat);
                     }
                 }
             }
@@ -276,6 +276,7 @@ namespace Game_of_Life
             gridPen.Dispose();
             cellBrush.Dispose();
         }
+        //display HUD
 
         private string DisplayHUD()
         {
@@ -288,10 +289,11 @@ namespace Game_of_Life
             {
                 type = "Torodial";
             }
-            string HUD = "Generations = " + generations + "\nCell Count = " + CountLivingCells() + "\nBoundary Type = " + type +  "\nUniverse Size = (" + universe.GetLength(0) + "," +
+            string HUD = "Generations = " + generations + "\nCell Count = " + CountLivingCells() + "\nBoundary Type = " + type + "\nUniverse Size = (" + universe.GetLength(0) + "," +
                 universe.GetLength(1) + ")";
             return HUD;
         }
+        //display neighbors
         private int displayNeighbors(int x, int y)
         {
             int neighbors;
@@ -305,6 +307,7 @@ namespace Game_of_Life
             }
             return neighbors;
         }
+        //draw grahpics
         private void graphicsPanel1_MouseClick(object sender, MouseEventArgs e)
         {
             // If the left mouse button was clicked
@@ -339,7 +342,7 @@ namespace Game_of_Life
         }
         //function to clear the universe and scratchpad board 
         private void clearUniverse()
-        {            
+        {
             // Iterate through the universe in the y, top to bottom
             for (int y = 0; y < universe.GetLength(1); y++)
             {
@@ -358,7 +361,7 @@ namespace Game_of_Life
             // Tell Windows you need to repaint
             graphicsPanel1.Invalidate();
         }
-        
+
         //logic for counting tiles around a cell (for a finite universe)
         private int CountNeighbors(int _x, int _y)
         {
@@ -369,7 +372,7 @@ namespace Game_of_Life
             int livingNeighborCount = 0;
             //making sure right value doesn't throw.
             if (checkRight)
-            {                
+            {
                 //checking to the right
                 if (universe[_x + 1, _y] == true)
                 {
@@ -438,8 +441,8 @@ namespace Game_of_Life
         //function for a torodial universe
         private int CountNeighborsTorodial(int _x, int _y)
         {
-            int count = 0;            
-            int xLen = universe.GetLength(0); 
+            int count = 0;
+            int xLen = universe.GetLength(0);
             int yLen = universe.GetLength(1);
             for (int yOffset = -1; yOffset <= 1; yOffset++)
             {
@@ -456,11 +459,11 @@ namespace Game_of_Life
                     // if yCheck is less than 0 then set to yLen - 1
                     if (xCheck < 0)
                     {
-                        xCheck = xLen -1;
+                        xCheck = xLen - 1;
                     }
                     if (yCheck < 0)
                     {
-                        yCheck = yLen -1;
+                        yCheck = yLen - 1;
                     }
                     // if xCheck is greater than or equal too xLen then set to 0
                     if (xCheck >= xLen)
@@ -488,7 +491,7 @@ namespace Game_of_Life
                 // Iterate through the universe in the x, left to right
                 for (int x = 0; x < universe.GetLength(0); x++)
                 {
-                    if (universe[x,y] == true)
+                    if (universe[x, y] == true)
                     {
                         count += 1;
                     }
@@ -515,13 +518,13 @@ namespace Game_of_Life
 
                 // Iterate through the universe one row at a time.
                 for (int y = 0; y < universe.GetLength(1); y++)
-                {                    
+                {
                     String currentRow = string.Empty;
 
                     // Iterate through the current row one cell at a time.
-                    for (int x = 0; x <universe.GetLength(0); x++)
+                    for (int x = 0; x < universe.GetLength(0); x++)
                     {
-                        if (universe[x,y] == true)
+                        if (universe[x, y] == true)
                         {
                             currentRow += "O";
                         }
@@ -547,7 +550,7 @@ namespace Game_of_Life
 
             if (DialogResult.OK == openFile.ShowDialog())
             {
-                StreamReader reader = new StreamReader(openFile.FileName);                
+                StreamReader reader = new StreamReader(openFile.FileName);
                 int maxWidth = 0;
                 int maxHeight = 0;
 
@@ -561,7 +564,7 @@ namespace Game_of_Life
                     if (row.StartsWith("!"))
                     {
                         continue;
-                    }                    
+                    }
                     else
                     {
                         maxHeight += 1;
@@ -577,7 +580,7 @@ namespace Game_of_Life
                 int yPos = 0;
                 // Iterate through the file again, this time reading in the cells.
                 while (!reader.EndOfStream)
-                {                    
+                {
                     // Read one row at a time.
                     string row = reader.ReadLine();
                     if (row.StartsWith("!"))
@@ -585,7 +588,7 @@ namespace Game_of_Life
                         continue;
                     }
                     else
-                    {                         
+                    {
                         for (int xPos = 0; xPos < row.Length; xPos++)
                         {
                             if (row[xPos] == 'O')
@@ -595,18 +598,103 @@ namespace Game_of_Life
                             if (row[xPos] == '.')
                             {
                                 universe[xPos, yPos] = false;
-                            }                            
+                            }
                         }
                         yPos += 1;
                         continue;
-                    }   
+                    }
                 }
                 // Close the file.
                 reader.Close();
             }
         }
+        //function for seed dialog box
+        private void setSeedDialog()
+        {
+            RandomizerDialog seedSetting = new RandomizerDialog();
 
-        //toolstrip and menu functions
+            seedSetting.Seed = currentSeed;
+
+            if (seedSetting.ShowDialog() == DialogResult.OK)
+            {
+                currentSeed = (int)seedSetting.Seed;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //function for toggling gridlines
+        private void gridDisplayToggle()
+        {
+            if (gridDisplay == true)
+            {
+                gridDisplay = false;
+            }
+            else
+            {
+                gridDisplay = true;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //toggle neighbortext
+        private void textDisplayToggle()
+        {
+            if (textDisplay == true)
+            {
+                textDisplay = false;
+            }
+            else
+            {
+                textDisplay = true;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //toggle HUD
+        private void HUDDisplayToggle()
+        {
+            if (HUDdisplay == true)
+            {
+                HUDdisplay = false;
+            }
+            else
+            {
+                HUDdisplay = true;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //toggle universe
+        private void universeTypeToggle()
+        {
+            if (finiteMode == true)
+            {
+                finiteMode = false;
+            }
+            else
+            {
+                finiteMode = true;
+            }
+            graphicsPanel1.Invalidate();
+        }
+        //set universe size dialog
+        private void universeSetSize()
+        {
+            UniverseSettingsDialog settings = new UniverseSettingsDialog();
+
+            settings.UniverseLength = universe.GetLength(0);
+            settings.UniverseHeight = universe.GetLength(1);
+            settings.TimeInterval = timer.Interval;
+
+            if (settings.ShowDialog() == DialogResult.OK)
+            {
+                universe = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
+                scratchpad = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
+                timer.Interval = (int)settings.TimeInterval;
+            }
+            graphicsPanel1.Invalidate();
+        }
+
+
+        #endregion
+
+        #region toolstrip and menu
         //clears and redraws universe based on current seed
         private void menuFileNew_Click(object sender, EventArgs e)
         {
@@ -649,58 +737,22 @@ namespace Game_of_Life
         //menu button for toggling grid lines on or off
         private void customizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (gridDisplay == true)
-            {
-                gridDisplay = false;
-            }
-            else
-            {
-                gridDisplay = true;
-            }
-            graphicsPanel1.Invalidate();
+            gridDisplayToggle();
         }
         //menu button to toggle neighbor count in cells
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (textDisplay == true)
-            {
-                textDisplay = false;
-            }
-            else
-            {
-                textDisplay = true;
-            }
-            graphicsPanel1.Invalidate();
+            textDisplayToggle();
         }
         //dialog to edit the size and time interval for universe
         private void editWindowSizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UniverseSettingsDialog settings = new UniverseSettingsDialog();
-
-            settings.UniverseLength = universe.GetLength(0);
-            settings.UniverseHeight = universe.GetLength(1);
-            settings.TimeInterval = timer.Interval;
-
-            if (settings.ShowDialog() == DialogResult.OK)
-            {
-                universe = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
-                scratchpad = new bool[(int)settings.UniverseLength, (int)settings.UniverseHeight];
-                timer.Interval = (int)settings.TimeInterval;
-            }
-            graphicsPanel1.Invalidate();
+            universeSetSize();
         }
         //dialog to set the seed for universe
         private void setSeedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            RandomizerDialog seedSetting = new RandomizerDialog();
-
-            seedSetting.Seed = currentSeed;
-
-            if (seedSetting.ShowDialog() == DialogResult.OK)
-            {
-                currentSeed = (int)seedSetting.Seed;
-            }
-            graphicsPanel1.Invalidate();
+            setSeedDialog();
         }
         //creates new universe from random time seed
         private void randomizeUniverseToolStripMenuItem_Click(object sender, EventArgs e)
@@ -713,7 +765,7 @@ namespace Game_of_Life
         //dialog to save current universe
         private void saveToolStripButton_Click(object sender, EventArgs e)
         {
-            SaveUniverse();            
+            SaveUniverse();
         }
         //dialog to open a file to read and load universe
         private void openToolStripButton_Click(object sender, EventArgs e)
@@ -775,29 +827,45 @@ namespace Game_of_Life
         //toggle universe type between torodial and finite
         private void changeUniverseTypeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (finiteMode == true)
-            {
-                finiteMode = false;
-            }
-            else
-            {
-                finiteMode = true;
-            }
-            graphicsPanel1.Invalidate();
+            universeTypeToggle();
         }
-
+        //toggle HUD display
         private void toggleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (HUDdisplay == true)
-            {
-                HUDdisplay = false;
-            }
-            else
-            {
-                HUDdisplay = true;
-            }
-            graphicsPanel1.Invalidate();
+            HUDDisplayToggle();
         }
+        //context sensitive
+        //toggle grid    
+        private void toggleGridToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            gridDisplayToggle();
+        }
+        //toggle neighborcount
+        private void toggleNeighborCountToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textDisplayToggle();
+        }
+        //toggle HUD
+        private void toggleHUDToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            HUDDisplayToggle();
+        }
+        private void setSeedToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            setSeedDialog();
+        }
+
+        private void setUniverseSizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            universeSetSize();
+        }
+
+        private void toggleUniverseTypeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            universeTypeToggle();
+        }
+        #endregion
+
     }
     
 }
